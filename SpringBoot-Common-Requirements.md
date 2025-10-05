@@ -1,12 +1,10 @@
 # Spring Boot Common Service Requirements
 
 ## Project Overview
-
 Establish foundational requirements and architectural standards that apply to any Spring Boot microservice development. These common requirements ensure consistency, maintainability, and best practices across all Spring Boot services within the organization.
 
 ## Common Spring Boot Dependencies
 
-```xml
 <!-- Core Spring Boot Starters -->
 - spring-boot-starter-web (REST API development)
 - spring-boot-starter-data-jpa (Database operations)
@@ -31,98 +29,89 @@ Establish foundational requirements and architectural standards that apply to an
 <!-- Monitoring and Observability -->
 - micrometer-registry-prometheus (Metrics collection)
 - zipkin-brave (Distributed tracing)
-```
 
 ## Standard Spring Boot Architecture
 
 ### 1. Controller Layer
 
 #### A. REST Controller Standards
-
-- **Base URL Structure**: `/api/{service-name}/{version}`
-- **HTTP Method Usage**: GET (retrieval), POST (creation), PUT (updates), DELETE (removal)
-- **Response Standards**: Consistent JSON structure with proper HTTP status codes
-- **Error Handling**: Centralized exception handling with @ControllerAdvice
-- **Validation**: Input validation using @Valid and custom validators
-- **API Documentation**: Complete OpenAPI/Swagger documentation for all endpoints
-- **CORS Configuration**: Proper Cross-Origin Resource Sharing setup
-- **Rate Limiting**: Request throttling for API protection
+• Base URL Structure: `/api/{service-name}/{version}`
+• HTTP Method Usage: GET (retrieval), POST (creation), PUT (updates), DELETE (removal)
+• Response Standards: Consistent JSON structure with proper HTTP status codes
+• Error Handling: Centralized exception handling with @ControllerAdvice
+• Validation: Input validation using @Valid and custom validators
+• API Documentation: Complete OpenAPI/Swagger documentation for all endpoints
+• CORS Configuration: Proper Cross-Origin Resource Sharing setup
+• Rate Limiting: Request throttling for API protection
 
 #### B. Controller Best Practices
-
-- Slim controllers with business logic delegated to service layer
-- Consistent request/response DTO usage
-- Proper HTTP status code usage (200, 201, 400, 401, 403, 404, 500)
-- Request logging and monitoring integration
-- Pagination support for list endpoints
-- Filtering and sorting capabilities
-- Content negotiation support (JSON, XML)
+• Slim controllers with business logic delegated to service layer
+• Consistent request/response DTO usage
+• Proper HTTP status code usage (200, 201, 400, 401, 403, 404, 500)
+• Request logging and monitoring integration
+• Pagination support for list endpoints
+• Filtering and sorting capabilities
+• Content negotiation support (JSON, XML)
 
 ### 2. Service Layer
 
 #### A. Business Logic Standards
-
-- **Service Interface Pattern**: Define interfaces for all business services
-- **Transaction Management**: Proper @Transactional annotation usage
-- **Exception Handling**: Business-specific exceptions with meaningful messages
-- **Logging**: Comprehensive logging with appropriate levels (DEBUG, INFO, WARN, ERROR)
-- **Validation**: Business rule validation and enforcement
-- **Caching**: Strategic caching implementation with @Cacheable
-- **Async Processing**: Non-blocking operations with @Async where appropriate
+• Service Interface Pattern: Define interfaces for all business services
+• Transaction Management: Proper @Transactional annotation usage
+• Exception Handling: Business-specific exceptions with meaningful messages
+• Logging: Comprehensive logging with appropriate levels (DEBUG, INFO, WARN, ERROR)
+• Validation: Business rule validation and enforcement
+• Caching: Strategic caching implementation with @Cacheable
+• Async Processing: Non-blocking operations with @Async where appropriate
 
 #### B. Service Layer Best Practices
-
-- Single Responsibility Principle adherence
-- Dependency injection with constructor-based injection preferred
-- Stateless service design for scalability
-- Proper error propagation and handling
-- Business metrics and monitoring integration
-- Configuration externalization
-- Service-to-service communication standards
+• Single Responsibility Principle adherence
+• Dependency injection with constructor-based injection preferred
+• Stateless service design for scalability
+• Proper error propagation and handling
+• Business metrics and monitoring integration
+• Configuration externalization
+• Service-to-service communication standards
 
 ### 3. Repository Layer
 
 #### A. Data Access Standards
-
-- **JPA Repository Pattern**: Extend JpaRepository for standard CRUD operations
-- **Custom Queries**: @Query annotations for complex database operations
-- **Named Queries**: Externalized queries for better maintainability
-- **Pagination**: Built-in pagination and sorting support
-- **Auditing**: Automatic audit fields (createdAt, updatedAt, createdBy, updatedBy)
-- **Soft Deletes**: Logical deletion with @Where annotations
-- **Database Migrations**: Flyway or Liquibase for version control
+• JPA Repository Pattern: Extend JpaRepository for standard CRUD operations
+• Custom Queries: @Query annotations for complex database operations
+• Named Queries: Externalized queries for better maintainability
+• Pagination: Built-in pagination and sorting support
+• Auditing: Automatic audit fields (createdAt, updatedAt, createdBy, updatedBy)
+• Soft Deletes: Logical deletion with @Where annotations
+• Database Migrations: Flyway or Liquibase for version control
 
 #### B. Repository Best Practices
-
-- Repository interfaces for better testability
-- Query optimization and performance monitoring
-- Database connection pooling configuration
-- Proper indexing strategy
-- Transaction isolation level configuration
-- Lazy loading optimization
-- Bulk operations for performance
+• Repository interfaces for better testability
+• Query optimization and performance monitoring
+• Database connection pooling configuration
+• Proper indexing strategy
+• Transaction isolation level configuration
+• Lazy loading optimization
+• Bulk operations for performance
 
 ### 4. Entity/Model Layer
 
 #### A. JPA Entity Standards
-
-- **Entity Mapping**: Proper @Entity, @Table, @Column annotations
-- **Primary Keys**: Auto-generated IDs with @GeneratedValue
-- **Relationships**: Proper @OneToMany, @ManyToOne, @ManyToMany mappings
-- **Validation**: Bean validation annotations (@NotNull, @Size, @Email, etc.)
-- **Audit Fields**: Common audit fields in all entities
-- **Serialization**: JSON serialization configuration with @JsonIgnore, @JsonProperty
-- **Equality**: Proper equals() and hashCode() implementation
+• Entity Mapping: Proper @Entity, @Table, @Column annotations
+• Primary Keys: Auto-generated IDs with @GeneratedValue
+• Relationships: Proper @OneToMany, @ManyToOne, @ManyToMany mappings
+• Validation: Bean validation annotations (@NotNull, @Size, @Email, etc.)
+• Audit Fields: Common audit fields in all entities
+• Serialization: JSON serialization configuration with @JsonIgnore, @JsonProperty
+• Equality: Proper equals() and hashCode() implementation
 
 #### B. Entity Best Practices
-
-- Entity classes should be immutable where possible
-- Use of @Embedded for value objects
-- Proper cascade and fetch type configuration
-- Entity lifecycle callbacks (@PrePersist, @PreUpdate)
-- Version control with @Version for optimistic locking
-- Custom entity listeners for cross-cutting concerns
-- Database schema validation
+• Entity classes should be immutable where possible
+• Use of @Embedded for value objects
+• Proper cascade and fetch type configuration
+• Entity lifecycle callbacks (@PrePersist, @PreUpdate)
+• Version control with @Version for optimistic locking
+• Custom entity listeners for cross-cutting concerns
+• Database schema validation
 
 ## Common Configuration Standards
 
@@ -263,7 +252,6 @@ public class DatabaseConfig {
 ## Common Exception Handling
 
 ### A. Global Exception Handler
-
 ```java
 @ControllerAdvice
 @Slf4j
@@ -307,7 +295,6 @@ public class GlobalExceptionHandler {
 ```
 
 ### B. Standard Error Response
-
 ```java
 @Data
 @Builder
@@ -326,7 +313,6 @@ public class ErrorResponse {
 ## Common Testing Standards
 
 ### A. Unit Testing Framework
-
 ```java
 @ExtendWith(MockitoExtension.class)
 class ServiceTest {
@@ -355,7 +341,6 @@ class ServiceTest {
 ```
 
 ### B. Integration Testing Framework
-
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -388,7 +373,6 @@ class IntegrationTest {
 ```
 
 ### C. Repository Testing Framework
-
 ```java
 @DataJpaTest
 class RepositoryTest {
@@ -415,10 +399,239 @@ class RepositoryTest {
 }
 ```
 
+## Test Case Generation Standards
+
+### A. Automated Test Coverage Requirements
+
+#### Mandatory Test Coverage:
+- **Unit Tests**: Minimum 80% code coverage for service and utility classes
+- **Integration Tests**: Complete API endpoint coverage with positive and negative scenarios
+- **Repository Tests**: Database operation validation for all custom queries
+- **Controller Tests**: HTTP request/response validation for all REST endpoints
+- **Security Tests**: Authentication and authorization validation
+- **Performance Tests**: Load testing for critical business operations
+
+#### Test Case Generation Framework:
+```java
+@ExtendWith(MockitoExtension.class)
+class AutoGeneratedServiceTest {
+    
+    @Mock
+    private UserRepository userRepository;
+    
+    @InjectMocks
+    private UserService userService;
+    
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "invalid-email"})
+    void shouldThrowValidationException_WhenEmailIsInvalid(String email) {
+        // Given
+        UserRegistrationRequest request = UserRegistrationRequest.builder()
+            .email(email)
+            .build();
+        
+        // When & Then
+        assertThrows(ValidationException.class, 
+            () -> userService.createUser(request));
+    }
+    
+    @Test
+    void shouldCreateUser_WhenValidDataProvided() {
+        // Given
+        UserRegistrationRequest request = createValidUserRequest();
+        User expectedUser = createUserEntity();
+        when(userRepository.save(any(User.class))).thenReturn(expectedUser);
+        
+        // When
+        UserRegistrationResponse response = userService.createUser(request);
+        
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getUsername()).isEqualTo(expectedUser.getUsername());
+        verify(userRepository).save(any(User.class));
+    }
+}
+```
+
+### B. API Test Automation Standards
+
+#### RestAssured Integration Testing:
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestMethodOrder(OrderAnnotation.class)
+class ApiIntegrationTest {
+    
+    @LocalServerPort
+    private int port;
+    
+    @Test
+    @Order(1)
+    void shouldRegisterNewUser() {
+        UserRegistrationRequest request = UserRegistrationRequest.builder()
+            .username("testuser")
+            .email("test@example.com")
+            .password("password123")
+            .firstName("Test")
+            .lastName("User")
+            .build();
+        
+        given()
+            .port(port)
+            .contentType(ContentType.JSON)
+            .body(request)
+        .when()
+            .post("/api/v1/users/register")
+        .then()
+            .statusCode(201)
+            .body("username", equalTo("testuser"))
+            .body("email", equalTo("test@example.com"));
+    }
+    
+    @Test
+    @Order(2)
+    void shouldGetUserById() {
+        given()
+            .port(port)
+            .header("X-User-ID", "1")
+            .header("X-User-Roles", "USER")
+        .when()
+            .get("/api/v1/users/1")
+        .then()
+            .statusCode(200)
+            .body("id", notNullValue())
+            .body("username", notNullValue());
+    }
+}
+```
+
+## Postman Collection Generation Standards
+
+### A. Automated Postman Script Generation
+
+#### Collection Structure Requirements:
+- **Environment Variables**: Separate dev, test, and prod environments
+- **Authentication Setup**: Pre-request scripts for header-based auth
+- **Test Scripts**: Automated response validation in each request
+- **Data Management**: Dynamic test data generation and cleanup
+- **Error Scenarios**: Negative test cases for error handling validation
+
+#### Sample Postman Collection Structure:
+```json
+{
+  "info": {
+    "name": "User Management Service API",
+    "description": "Complete API testing collection for User Management Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Set dynamic headers for user authentication",
+          "pm.request.headers.add({key: 'X-User-ID', value: pm.environment.get('current_user_id')});",
+          "pm.request.headers.add({key: 'X-User-Roles', value: pm.environment.get('user_roles')});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "{{base_url}}/api/v1"
+    }
+  ]
+}
+```
+
+### B. Postman Test Scripts Standards
+
+#### Standard Test Script Template:
+```javascript
+// Response validation template
+pm.test("Status code validation", function () {
+    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);
+});
+
+pm.test("Response time validation", function () {
+    pm.expect(pm.response.responseTime).to.be.below(2000);
+});
+
+pm.test("Response structure validation", function () {
+    const responseJson = pm.response.json();
+    pm.expect(responseJson).to.have.property('id');
+    pm.expect(responseJson.id).to.be.a('number');
+});
+
+pm.test("Business logic validation", function () {
+    const responseJson = pm.response.json();
+    pm.expect(responseJson.email).to.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+});
+
+// Dynamic data extraction for chaining requests
+if (pm.response.code === 201) {
+    const responseJson = pm.response.json();
+    pm.environment.set("created_user_id", responseJson.id);
+    pm.environment.set("created_username", responseJson.username);
+}
+```
+
+### C. Environment Configuration Standards
+
+#### Development Environment:
+```json
+{
+  "name": "Development",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "enabled": true
+    },
+    {
+      "key": "current_user_id",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "user_roles",
+      "value": "USER,ADMIN",
+      "enabled": true
+    }
+  ]
+}
+```
+
+#### Production Environment:
+```json
+{
+  "name": "Production",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://api.production.com",
+      "enabled": true
+    },
+    {
+      "key": "current_user_id",
+      "value": "{{$randomInt}}",
+      "enabled": true
+    },
+    {
+      "key": "user_roles",
+      "value": "USER",
+      "enabled": true
+    }
+  ]
+}
+```
+
 ## Common Monitoring and Observability
 
 ### A. Health Check Configuration
-
 ```java
 @Component
 public class CustomHealthIndicator implements HealthIndicator {
@@ -444,7 +657,6 @@ public class CustomHealthIndicator implements HealthIndicator {
 ```
 
 ### B. Metrics Configuration
-
 ```java
 @Component
 public class CustomMetrics {
@@ -475,7 +687,6 @@ public class CustomMetrics {
 ## Common Security Standards
 
 ### A. Basic Security Configuration
-
 ```java
 @Configuration
 @EnableWebSecurity
@@ -508,7 +719,6 @@ public class BasicSecurityConfig {
 ## Common Logging Standards
 
 ### A. Structured Logging Configuration
-
 ```properties
 # Logback configuration in logback-spring.xml
 logging.pattern.console=%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
@@ -519,7 +729,6 @@ logging.file.max-history=30
 ```
 
 ### B. Application Logging Standards
-
 ```java
 @Slf4j
 @Service
@@ -544,28 +753,36 @@ public class ExampleService {
 
 ## Expected Common Deliverables
 
-1. **Project Structure** following Spring Boot best practices
-2. **Common Dependencies** configured and optimized
-3. **Layered Architecture** with proper separation of concerns
-4. **Configuration Management** with profile-specific properties
-5. **Exception Handling** with global error handling
-6. **Testing Framework** with unit, integration, and repository tests
-7. **Monitoring Setup** with health checks and metrics
-8. **Security Foundation** with basic security configuration
-9. **Logging Framework** with structured logging
-10. **Documentation** with OpenAPI/Swagger integration
+1. Project Structure following Spring Boot best practices
+2. Common Dependencies configured and optimized
+3. Layered Architecture with proper separation of concerns
+4. Configuration Management with profile-specific properties
+5. Exception Handling with global error handling
+6. Testing Framework with unit, integration, and repository tests
+7. Monitoring Setup with health checks and metrics
+8. Security Foundation with basic security configuration
+9. Logging Framework with structured logging
+10. Documentation with OpenAPI/Swagger integration
+11. **Comprehensive Test Suite** with automated test case generation covering all API endpoints
+12. **API Testing Collection** with Postman scripts for manual and automated API testing
 
 ## Success Criteria
 
-- ✅ Standard Spring Boot project structure established
-- ✅ Common dependencies configured and working
-- ✅ Layered architecture implemented correctly
-- ✅ Configuration profiles working (dev, test, prod)
-- ✅ Global exception handling implemented
-- ✅ Testing framework setup and functional
-- ✅ Health checks and monitoring operational
-- ✅ Basic security configuration applied
-- ✅ Structured logging implemented
-- ✅ API documentation generated and accessible
-- ✅ Database connectivity and JPA working
-- ✅ Build and deployment process functional
+• ✅ Standard Spring Boot project structure established
+• ✅ Common dependencies configured and working
+• ✅ Layered architecture implemented correctly
+• ✅ Configuration profiles working (dev, test, prod)
+• ✅ Global exception handling implemented
+• ✅ Testing framework setup and functional
+• ✅ Health checks and monitoring operational
+• ✅ Basic security configuration applied
+• ✅ Structured logging implemented
+• ✅ API documentation generated and accessible
+• ✅ Database connectivity and JPA working
+• ✅ Build and deployment process functional
+• ✅ **Comprehensive test suite with 80%+ code coverage implemented**
+• ✅ **Automated test cases covering all positive and negative scenarios**
+• ✅ **Postman collection with complete API endpoint coverage generated**
+• ✅ **Environment-specific Postman configurations created**
+• ✅ **API test automation scripts functional and validated**
+• ✅ **Test data management and cleanup processes established**
