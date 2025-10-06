@@ -4,6 +4,12 @@
 
 Develop a comprehensive Spring Boot authentication service focused on JWT-based authentication, user credential validation, and secure session management. This service handles login, logout, token generation, token validation, and authentication state management.
 
+**Service Details:**
+- **Authentication Service Port**: 8082
+- **Swagger UI URL**: `http://localhost:8082/swagger-ui.html`
+- **API Docs URL**: `http://localhost:8082/api-docs`
+- **User Management Service**: `http://localhost:8080/api/v1` (integrated)
+
 ## Authentication Dependencies
 
 ```xml
@@ -32,26 +38,209 @@ Develop a comprehensive Spring Boot authentication service focused on JWT-based 
 
 #### A. AuthController.java
 
-- POST `/api/auth/login` - User authentication with credentials
-- POST `/api/auth/logout` - User logout with token invalidation
-- POST `/api/auth/refresh` - Access token refresh using refresh token
-- POST `/api/auth/validate` - Token validation for other services
-- GET `/api/auth/me` - Current authenticated user information
-- POST `/api/auth/revoke` - Token revocation (administrative)
-- Comprehensive input validation for all authentication requests
-- Rate limiting for brute force attack prevention
-- Detailed audit logging for authentication attempts
-- Complete OpenAPI/Swagger documentation for authentication endpoints
+**Public Authentication Endpoints:**
+
+- **POST** `/api/auth/login` - User authentication with credentials
+  - **Request Body**: `LoginRequest`
+  ```json
+  {
+    "username": "string (3-100 chars, required)",
+    "password": "string (6-100 chars, required)", 
+    "rememberMe": "boolean (optional, default: false)",
+    "deviceInfo": "string (optional)"
+  }
+  ```
+  - **Response**: `AuthenticationResponse`
+  ```json
+  {
+    "accessToken": "string",
+    "refreshToken": "string", 
+    "tokenType": "Bearer",
+    "accessTokenExpiry": "long (timestamp)",
+    "refreshTokenExpiry": "long (timestamp)",
+    "userId": "long",
+    "username": "string",
+    "authenticationTimestamp": "datetime"
+  }
+  ```
+
+- **POST** `/api/auth/refresh` - Access token refresh using refresh token
+  - **Request Body**: `RefreshTokenRequest`
+  ```json
+  {
+    "refreshToken": "string (required)"
+  }
+  ```
+  - **Response**: `AuthenticationResponse`
+
+- **POST** `/api/auth/validate` - Token validation for other services  
+  - **Request Body**: `TokenValidationRequest`
+  ```json
+  {
+    "accessToken": "string (required)"
+  }
+  ```
+  - **Response**: `TokenValidationResponse`
+  ```json
+  {
+    "valid": "boolean",
+    "userId": "long",
+    "username": "string", 
+    "expired": "boolean",
+    "tokenType": "string"
+  }
+  ```
+
+**Protected Authentication Endpoints (Require Bearer Token):**
+
+- **POST** `/api/auth/logout` - User logout with token invalidation
+  - **Headers**: `Authorization: Bearer <token>` OR
+  - **Request Body**: `LogoutRequest` (optional)
+  ```json
+  {
+    "accessToken": "string (optional if header provided)"
+  }
+  ```
+  - **Response**:
+  ```json
+  {
+    "message": "Logout successful"
+  }
+  ```
+
+- **GET** `/api/auth/me` - Current authenticated user information
+  - **Headers**: `Authorization: Bearer <token>` (required)
+  - **Response**:
+  ```json
+  {
+    "userId": "long",
+    "username": "string",
+    "claims": "object",
+    "authenticated": "boolean"
+  }
+  ```
+
+- **POST** `/api/auth/revoke` - Token revocation (administrative)
+  - **Query Parameters**: 
+    - `userId` (Long, required)
+    - `reason` (String, optional, default: "ADMIN_REVOCATION")
+  - **Response**:
+  ```json
+  {
+    "message": "All tokens revoked for user: {userId}",
+    "reason": "string", 
+    "revokedBy": "string"
+  }
+  ```
 
 #### B. AuthInternalController.java
 
-- Internal endpoints for service-to-service authentication validation
-- POST `/internal/auth/validate-token` - Token validation for microservices
-- POST `/internal/auth/revoke-user-tokens` - Revoke all tokens for specific user
-- GET `/internal/auth/token-info` - Token metadata and claims information
-- Service authentication and authorization
+**Internal Service-to-Service Endpoints:**
 
-### 2. JWT Token Management
+- **POST** `/internal/auth/validate-token` - Token validation for microservices
+  - **Request Body**:
+  ```json
+  {
+    "token": "string (required)"
+  }
+  ```
+  - **Response**: `TokenValidationResponse`
+
+- **POST** `/internal/auth/revoke-user-tokens` - Revoke all tokens for specific user
+  - **Request Body**:
+  ```json
+  {
+    "userId": "long (required)",
+    "reason": "string (optional, default: 'INTERNAL_SERVICE_REVOCATION')",
+    "revokedBy": "string (optional, default: 'INTERNAL_SERVICE')"
+  }
+  ```
+  - **Response**:
+  ```json
+  {
+    "message": "All tokens revoked for user: {userId}",
+    "reason": "string",
+    "revokedBy": "string"
+  }
+  ```
+
+- **GET** `/internal/auth/token-info` - Token metadata and claims information
+  - **Query Parameters**: `token` (String, required)
+  - **Response**:
+  ```json
+  {
+    "valid": "boolean",
+    "expired": "boolean", 
+    "username": "string",
+    "userId": "long",
+    "tokenType": "string",
+    "claims": "object"
+  }
+  ```
+
+- **GET** `/internal/auth/user-service-health` - Check user service health
+  - **Response**:
+  ```json
+  {
+    "status": "UP|DOWN", 
+    "service": "user-service",
+    "message": "string"
+  }
+  ```
+
+- **GET** `/internal/auth/test-user-service` - Test user service connectivity
+  - **Query Parameters**: 
+    - `username` (String, optional, default: "testuser")
+    - `password` (String, optional, default: "testpass")
+  - **Response**:
+  ```json
+  {
+    "status": "SUCCESS|ERROR",
+    "message": "string",
+    "credentialsValid": "boolean",
+    "user": "object|null"
+  }
+  ```
+
+### 2. User Management Service Integration
+
+#### A. UserServiceClient.java (Feign Client)
+
+**User Management Service API Calls** (via `http://localhost:8080/api/v1`):
+
+- **GET** `/internal/users/validate` - Validate user credentials
+  - **Query Parameters**: 
+    - `username` (String, required)
+    - `password` (String, required)  
+  - **Returns**: `Boolean`
+
+- **GET** `/users/{id}` - Get user by ID
+  - **Path Variable**: `id` (Long, required)
+  - **Returns**: `UserDto`
+  ```json
+  {
+    "id": "long",
+    "username": "string", 
+    "email": "string",
+    "firstName": "string",
+    "lastName": "string",
+    "active": "boolean",
+    "enabled": "boolean"
+  }
+  ```
+
+- **GET** `/internal/users/by-username/{username}` - Get user by username
+  - **Path Variable**: `username` (String, required)  
+  - **Returns**: `UserDto`
+
+#### B. UserServiceFallback.java
+
+Fallback implementation providing:
+- Cached user data utilization when service is unavailable
+- Graceful degradation of authentication features
+- Default responses for service unavailability scenarios
+
+### 3. JWT Token Management
 
 #### A. JwtUtil.java
 
@@ -59,10 +248,10 @@ Comprehensive JWT utility service for token operations
 
 **Token Generation:**
 - Access token generation with user claims and authorities
-- Refresh token generation with extended expiry
+- Refresh token generation with extended expiry (24 hours)
 - Custom claims addition (user ID, username, roles, permissions)
 - Token signing with secure secret key
-- Configurable token expiration times
+- Configurable token expiration times (access: 15 min, refresh: 24 hours)
 
 **Token Validation:**
 - Token signature verification
@@ -82,10 +271,10 @@ Comprehensive JWT utility service for token operations
 - Revoked token storage and management
 - Token blacklist checking for validation
 - Expired token cleanup scheduling
-- Blacklist storage optimization (Redis recommended)
+- Blacklist storage optimization (H2/Redis)
 - Token revocation audit logging
 
-### 3. Security Configuration
+### 4. Security Configuration
 
 #### A. SecurityConfig.java
 
@@ -100,14 +289,14 @@ Comprehensive Spring Security configuration
 
 **Authorization Configuration:**
 - HTTP security configuration with JWT filters
-- Public endpoint configuration (login, health checks)
+- Public endpoint configuration (login, health checks, swagger)
 - Protected endpoint authorization rules
 - CORS configuration for cross-origin requests
 - CSRF protection configuration (disabled for stateless JWT)
 
 **Session Management:**
 - Stateless session configuration
-- Session creation policy (NEVER/STATELESS)
+- Session creation policy (STATELESS)
 - Concurrent session control (if needed)
 
 #### B. JwtAuthenticationFilter.java
@@ -119,15 +308,14 @@ Comprehensive Spring Security configuration
 - Error handling for invalid or expired tokens
 - Request/response logging for authentication audit
 
-### 4. Authentication Service Layer
+### 5. Authentication Service Layer
 
 #### A. AuthenticationService.java
 
 **User Authentication:**
-- Username/password validation
+- Username/password validation via UserServiceClient
 - User account status verification (active, enabled, not locked)
 - Failed login attempt tracking and account locking
-- Multi-factor authentication support (optional)
 - Authentication success/failure logging and metrics
 
 **Token Management:**
@@ -138,95 +326,80 @@ Comprehensive Spring Security configuration
 - Token cleanup and maintenance
 
 **User Service Integration:**
-- User credential validation via User Management Service (https://github.com/kuldeepsinghpoc-beep/user-management-service)
+- User credential validation via User Management Service (`http://localhost:8080/api/v1`)
 - User profile information retrieval
-- Last login timestamp updates
 - User account status synchronization
 
 #### B. UserDetailsServiceImpl.java
 
 - Custom UserDetailsService implementation
-- User loading from User Management Service (https://github.com/kuldeepsinghpoc-beep/user-management-service)
+- User loading from User Management Service (`http://localhost:8080/api/v1`)
 - UserDetails object creation with authorities
 - User account status mapping
 - Caching for performance optimization
 
-### 5. Authentication DTOs
+### 6. Authentication DTOs
 
 #### A. Authentication Request DTOs
 
 - **LoginRequest.java** - User login credentials
-  - Username or email (required, validated)
-  - Password (required, validated)
-  - Remember me option (optional)
+  - Username or email (required, validated, 3-100 characters)
+  - Password (required, validated, 6-100 characters)
+  - Remember me option (optional, default: false)
   - Device information for tracking (optional)
+  
 - **RefreshTokenRequest.java** - Token refresh request
   - Refresh token (required, validated)
-  - Device validation (optional)
+  
 - **TokenValidationRequest.java** - Token validation request
   - Access token (required)
-  - Token type specification
+  
 - **LogoutRequest.java** - User logout request
-  - Access token for revocation
-  - Refresh token for revocation (optional)
+  - Access token for revocation (optional if header provided)
 
 #### B. Authentication Response DTOs
 
 - **AuthenticationResponse.java** - Successful authentication response
-  - Access token with expiration
-  - Refresh token with expiration
+  - Access token with expiration (15 minutes)
+  - Refresh token with expiration (24 hours) 
   - Token type (Bearer)
   - User basic information (ID, username)
   - Authentication timestamp
+  
 - **TokenValidationResponse.java** - Token validation response
   - Validation status (valid/invalid/expired)
   - User information from token claims
   - Token expiration information
   - Validation timestamp
+  
 - **AuthErrorResponse.java** - Authentication error response
   - Error code and description
   - Timestamp and request ID
   - Detailed error information for debugging
-
-### 6. User Service Integration
-
-#### A. UserServiceClient.java
-
-- Feign client for User Management Service communication (https://github.com/kuldeepsinghpoc-beep/user-management-service)
-- User credential validation endpoints
-- User profile information retrieval
-- User account status checking and updates
-- Service discovery and load balancing configuration
-- Circuit breaker and retry logic
-- Fallback mechanisms for service unavailability
-
-#### B. UserServiceFallback.java
-
-- Fallback implementation for User Service unavailability
-- Cached user data utilization
-- Graceful degradation of authentication features
-- Error handling and user notification
 
 ## Authentication Configuration
 
 ### A. JWT Configuration Properties
 
 ```properties
+# Server Configuration  
+server.port=8082
+
 # JWT Configuration
 app.jwt.secret=${JWT_SECRET:mySecretKey12345678901234567890123456789012345678901234567890}
-app.jwt.access-token-expiry=900000
-app.jwt.refresh-token-expiry=86400000
+app.jwt.access-token-expiry=900000     # 15 minutes
+app.jwt.refresh-token-expiry=86400000  # 24 hours
 app.jwt.issuer=authentication-service
 app.jwt.audience=wipro-ai-services
 
 # Token Configuration
 app.auth.max-failed-attempts=5
-app.auth.account-lock-duration=900000
-app.auth.token-cleanup-interval=3600000
-app.auth.remember-me-expiry=2592000000
+app.auth.account-lock-duration=900000     # 15 minutes
+app.auth.token-cleanup-interval=3600000   # 1 hour
+app.auth.remember-me-expiry=2592000000    # 30 days
 
-# User Service Integration
-app.user-service.base-url=http://localhost:8081
+# User Service Integration  
+app.user-service.base-url=http://localhost:8080/api/v1
 app.user-service.timeout=5000
 app.user-service.retry-attempts=3
 app.user-service.circuit-breaker-enabled=true
@@ -237,6 +410,11 @@ app.security.cors-allowed-methods=GET,POST,PUT,DELETE,OPTIONS
 app.security.cors-allowed-headers=*
 app.security.rate-limit-requests=100
 app.security.rate-limit-window=3600
+
+# OpenAPI Documentation
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.operationsSorter=method
 ```
 
 ### B. Authentication Security Rules
@@ -265,50 +443,118 @@ app.security.rate-limit-window=3600
 
 - **Base URL**: `/api/auth`
 - **Internal Base URL**: `/internal/auth`
+- **Authentication Service**: `http://localhost:8082`
+- **Swagger UI**: `http://localhost:8082/swagger-ui.html`
 - **Content-Type**: `application/json`
 - **Authentication**: Bearer token (except login and public endpoints)
 
-#### Public Endpoints
+### API Testing Examples
 
-- `POST /api/auth/login` - User authentication
-  - Request: username/email and password
-  - Response: access token, refresh token, user info
-  - Rate limiting and brute force protection
-- `POST /api/auth/refresh` - Token refresh
-  - Request: refresh token
-  - Response: new access token and refresh token
-  - Refresh token validation and rotation
+#### 1. User Login
+```bash
+curl -X POST http://localhost:8082/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "testpass123", 
+    "rememberMe": false,
+    "deviceInfo": "Browser Chrome"
+  }'
+```
 
-#### Protected Endpoints
+#### 2. Get Current User Info
+```bash
+curl -X GET http://localhost:8082/api/auth/me \
+  -H "Authorization: Bearer <access_token>"
+```
 
-- `POST /api/auth/logout` - User logout
-  - Request: access token (from Authorization header)
-  - Response: logout confirmation
-  - Token blacklisting and cleanup
-- `GET /api/auth/me` - Current user information
-  - Request: access token (from Authorization header)
-  - Response: user profile from token claims
-- `POST /api/auth/validate` - Token validation (public for services)
-  - Request: token to validate
-  - Response: validation status and user info
-- `POST /api/auth/revoke` - Administrative token revocation
-  - Request: user ID or token to revoke
-  - Response: revocation confirmation
-  - Admin privileges required
+#### 3. Refresh Token
+```bash
+curl -X POST http://localhost:8082/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "<refresh_token>"
+  }'
+```
+
+#### 4. Validate Token
+```bash
+curl -X POST http://localhost:8082/api/auth/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "accessToken": "<access_token>"
+  }'
+```
+
+#### 5. User Logout
+```bash
+curl -X POST http://localhost:8082/api/auth/logout \
+  -H "Authorization: Bearer <access_token>"
+```
+
+#### 6. Admin Token Revocation
+```bash
+curl -X POST "http://localhost:8082/api/auth/revoke?userId=123&reason=ADMIN_ACTION" \
+  -H "Authorization: Bearer <admin_token>"
+```
 
 #### Internal Service Endpoints
 
-- `POST /internal/auth/validate-token` - Token validation for microservices
-- `POST /internal/auth/revoke-user-tokens` - Revoke all user tokens
-- `GET /internal/auth/token-info` - Token metadata and claims
-- Service-to-service authentication required
+#### 7. Internal Token Validation
+```bash  
+curl -X POST http://localhost:8082/internal/auth/validate-token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "<token_to_validate>"
+  }'
+```
+
+#### 8. Internal Token Info
+```bash
+curl -X GET "http://localhost:8082/internal/auth/token-info?token=<token>" \
+  -H "Content-Type: application/json"
+```
+
+#### 9. Check User Service Health
+```bash
+curl -X GET http://localhost:8082/internal/auth/user-service-health
+```
+
+#### 10. Test User Service Connection  
+```bash
+curl -X GET "http://localhost:8082/internal/auth/test-user-service?username=testuser&password=testpass"
+```
+
+### User Management Service Integration
+
+The authentication service integrates with the User Management Service at `http://localhost:8080/api/v1` through the following calls:
+
+#### UserServiceClient API Calls
+
+1. **Validate Credentials**
+   ```java
+   GET /internal/users/validate?username={username}&password={password}
+   Returns: Boolean
+   ```
+
+2. **Get User by ID**  
+   ```java
+   GET /users/{id}
+   Returns: UserDto
+   ```
+
+3. **Get User by Username**
+   ```java  
+   GET /internal/users/by-username/{username}
+   Returns: UserDto
+   ```
 
 ## Authentication Testing Requirements
 
 ### A. Authentication Flow Tests
 
 - User login with valid credentials
-- User login with invalid credentials
+- User login with invalid credentials  
 - Account locking after failed attempts
 - Token generation and validation
 - Token refresh and rotation
@@ -351,7 +597,7 @@ app.security.rate-limit-window=3600
 
 ```json
 {
-  "timestamp": "2025-10-05T10:15:30.123Z",
+  "timestamp": "2025-10-06T10:15:30.123Z",
   "status": 401,
   "error": "Unauthorized",
   "message": "Invalid credentials provided",
@@ -359,7 +605,7 @@ app.security.rate-limit-window=3600
   "details": {
     "errorCode": "INVALID_CREDENTIALS",
     "attemptCount": 3,
-    "lockoutTime": "2025-10-05T10:30:30.123Z",
+    "lockoutTime": "2025-10-06T10:30:30.123Z",
     "retryAfter": 900
   }
 }
@@ -448,7 +694,7 @@ authentication-service/
 
 ### A. API Documentation
 
-- Complete authentication endpoint documentation
+- Complete authentication endpoint documentation with Swagger UI at `http://localhost:8082/swagger-ui.html`
 - JWT token format and claims specification
 - Authentication flow diagrams and examples
 - Error handling and response format documentation
@@ -466,13 +712,13 @@ authentication-service/
 ## Expected Authentication Deliverables
 
 1. **JWT Authentication System** with token generation, validation, and refresh
-2. **User Credential Validation** integrated with User Management Service (https://github.com/kuldeepsinghpoc-beep/user-management-service)
+2. **User Credential Validation** integrated with User Management Service (`http://localhost:8080/api/v1`)
 3. **Token Blacklisting** for secure logout and token revocation
 4. **Security Configuration** with comprehensive Spring Security setup
 5. **Brute Force Protection** with account locking and rate limiting
-6. **Service Integration** with User Management Service via Feign client (https://github.com/kuldeepsinghpoc-beep/user-management-service)
+6. **Service Integration** with User Management Service via Feign client
 7. **Authentication Audit** with comprehensive logging and monitoring
-8. **API Documentation** with complete endpoint and security guides
+8. **API Documentation** with Swagger UI and complete endpoint guides
 9. **Testing Suite** covering authentication flows and security scenarios
 10. **Error Handling** with detailed error responses and user guidance
 
@@ -488,7 +734,17 @@ authentication-service/
 - ✅ Rate limiting and DDoS protection configured
 - ✅ Authentication audit logging and monitoring operational
 - ✅ Comprehensive error handling and user feedback working
-- ✅ API documentation complete and accessible
+- ✅ API documentation complete and accessible via Swagger UI
 - ✅ Testing coverage comprehensive for all authentication scenarios
 - ✅ Performance optimization and caching implemented
 - ✅ Production-ready with proper security hardening
+
+## Service URLs Quick Reference
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| **Authentication Service** | `http://localhost:8082` | Main authentication service |
+| **Swagger UI** | `http://localhost:8082/swagger-ui.html` | Interactive API documentation |
+| **API Documentation** | `http://localhost:8082/api-docs` | OpenAPI specification |
+| **User Management Service** | `http://localhost:8080/api/v1` | Integrated user service |
+| **H2 Console** | `http://localhost:8082/h2-console` | Database console (dev only) |
