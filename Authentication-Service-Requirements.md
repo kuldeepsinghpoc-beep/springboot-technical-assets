@@ -138,7 +138,7 @@ Comprehensive Spring Security configuration
 - Token cleanup and maintenance
 
 **User Service Integration:**
-- User credential validation via User Management Service
+- User credential validation via User Management Service (https://github.com/kuldeepsinghpoc-beep/user-management-service)
 - User profile information retrieval
 - Last login timestamp updates
 - User account status synchronization
@@ -146,7 +146,7 @@ Comprehensive Spring Security configuration
 #### B. UserDetailsServiceImpl.java
 
 - Custom UserDetailsService implementation
-- User loading from User Management Service
+- User loading from User Management Service (https://github.com/kuldeepsinghpoc-beep/user-management-service)
 - UserDetails object creation with authorities
 - User account status mapping
 - Caching for performance optimization
@@ -192,7 +192,7 @@ Comprehensive Spring Security configuration
 
 #### A. UserServiceClient.java
 
-- Feign client for User Management Service communication
+- Feign client for User Management Service communication (https://github.com/kuldeepsinghpoc-beep/user-management-service)
 - User credential validation endpoints
 - User profile information retrieval
 - User account status checking and updates
@@ -466,11 +466,11 @@ authentication-service/
 ## Expected Authentication Deliverables
 
 1. **JWT Authentication System** with token generation, validation, and refresh
-2. **User Credential Validation** integrated with User Management Service
+2. **User Credential Validation** integrated with User Management Service (https://github.com/kuldeepsinghpoc-beep/user-management-service)
 3. **Token Blacklisting** for secure logout and token revocation
 4. **Security Configuration** with comprehensive Spring Security setup
 5. **Brute Force Protection** with account locking and rate limiting
-6. **Service Integration** with User Management Service via Feign client
+6. **Service Integration** with User Management Service via Feign client (https://github.com/kuldeepsinghpoc-beep/user-management-service)
 7. **Authentication Audit** with comprehensive logging and monitoring
 8. **API Documentation** with complete endpoint and security guides
 9. **Testing Suite** covering authentication flows and security scenarios
