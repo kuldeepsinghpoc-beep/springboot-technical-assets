@@ -1,4 +1,4 @@
-# Spring Boot Common Service Requirements
+# Alight SpringBoot Architecture Requirements
 
 ## Project Overview
 Establish foundational requirements and architectural standards that apply to any Spring Boot microservice development. These common requirements ensure consistency, maintainability, and best practices across all Spring Boot services within the organization.
